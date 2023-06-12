@@ -20,34 +20,28 @@
 
 #hostname variable for hostname
 hostname=$(hostname)
-#Title of the day using if statements
+#Title of the day using if and elif statements
 if [[ $(date +%A) == 'Monday' ]]
 then
 	title='Start of Pain and Suffering'
-fi
-if [[ $(date +%A) == 'Tuesday' ]]
+elif [[ $(date +%A) == 'Tuesday' ]]
 then
-	title='Wake up early'
-fi
-if [[ $(date +%A) == 'Wednesday' ]]
-then
+	title='Start of depression'
+elif [[ $(date +%A) == 'Wednesday' ]]
+then 
 	title='Mid week drinking'
-fi
-if [[ $(date +%A) == 'Thursday' ]]
+elif [[ $(date +%A) == 'Thursday' ]]
 then
 	title='Almost done'
-fi
-if [[ $(date +%A) == 'Friday' ]]
+elif [[ $(date +%A) == 'Friday' ]]
 then
 	title='Let"s goooo'
-fi
-if [[ $(date +%A) == 'Saturday' ]]
+elif [[ $(date +%A) == 'Saturday' ]]
 then
 	title='Let"s go clubbing'
-fi
-if [[ $(date +%A) == 'Sunday' ]]
+elif [[ $(date +%A) == 'Sunday' ]]
 then
-	title='Last day of week'
+	title='Crying and Screaming'
 fi
 ###############
 # Main        #
@@ -56,4 +50,5 @@ cat <<EOF
 
 Welcome to planet $hostname, "$title $USER!"
 It is $(date +%A) at $(date +%R) $(date +%p)
+
 EOF
