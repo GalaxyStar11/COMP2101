@@ -226,13 +226,16 @@ driveFilesystemSizeSDA3=$(df -h | grep "sda3" | awk '{print $2"B"}')
 driveFilesystemFreeSDA2=$(df -h | grep "sda2" | awk '{print $4"B"}')
 driveFilesystemFreeSDA3=$(df -h | grep "sda3" | awk '{print $4"B"}')
 
+
 diskTable=$(paste -d ';' <(echo "$drivePartition0" ; echo "$drivePartition1" ; echo "$drivePartition2" ; echo "$drivePartition3" ) <( 
 echo "$driveManufacturer0" ; echo "$driveVendor1" ; echo "$driveVendor2" ; echo "$driveVendor3" ) <( 
 echo "$driveModel" ; echo "N/A" ; echo "N/A" ; echo "N/A") <( 
 echo "$driveSize0" ; echo "$driveSize1" ; echo "$driveSize2" ; echo "$driveSize3" ) <( 
 echo "N/A" ; echo "N/A" ; echo "$driveFilesystemSizeSDA2" ; echo "$driveFilesystemSizeSDA3" ) <( 
 echo "N/A" ; echo "N/A" ; echo "$driveFilesystemFreeSDA2" ; echo "$driveFilesystemFreeSDA3" ) <( 
-echo "$driveMountPoint0" ; echo "$driveMountPoint1" ; echo "$driveMountPoint2" ; echo "$driveMountPoint3" ) | column -N 'Logical Name (/dev/sda)',Vendor,Model,Size,'Filesystem Size','Filesystem Free Space','Mount Point' -s ';' -o ' | ' -t)
+echo "$driveMountPoint0" ; echo "$driveMountPoint1" ; echo "$driveMountPoint2" ; echo "$driveMountPoint3" ) | column -N 'Partition Name',Vendor,Model,Size,'Filesystem Size','Filesystem Free Space','Mount Point' -s ';' -o ' | ' -t)
+
+
 #a table of the installed disk drives with each table row having:
 #Drive manufacturer
 #Drive model
@@ -241,6 +244,33 @@ echo "$driveMountPoint0" ; echo "$driveMountPoint1" ; echo "$driveMountPoint2" ;
 #Mount point if mounted
 #Filesystem size in a human friendly format if filesystem is mounted
 #Filesystem free space in a human friendly format if filesystem is mounted
+
+############################ VIDEO REPORT #####################################
+#Video card/chipset manufacturer
+#Video car/chipset decription or model
+
+videoCardManufacturer=$(echo "$lshwOutput" | grep -A10 "\*\-display" | grep "vendor:" | awk '{print $2}')
+videoCardModel=$(echo "$lshwOutput" | grep -A10 "\*\-display" | grep "product" | awk '{$1=""; print $0}')
+videoCardDescription=$(echo "$lshwOutput" | grep -A10 "\*\-display" | grep  "description" | awk '{$1=""; print $0}')
+
+############################ NETWORK INFORMATION ###############################
+
+networkManu=$(echo "$lshwOutput" | grep -A10 "\*\-network" | grep "vendor:" | awk '{$1=""; print $0}')
+networkModel=$(echo "$lshwOutput" | grep -A10 "\*\-network" | grep "product:" | awk '{$1=""; print $0}')
+networkDesc=$(echo "$lshwOutput" | grep -A10 "\*\-network" | grep "description:" | awk '{$1=""; print $0}')
+interfaceLinkState=$(ip link show | grep "2:" | awk '{print $9}')
+interfaceSpeed=$(ethtool "*" | grep "Speed:" | awk '{print $2}')
+interfaceIPAddr=$(ip addr | grep -A5 "2:" | grep -w "inet" | awk '{print $2}')
+interfaceTable=$(paste -d ';' <(echo "$networkManu") <(echo "$networkModel") <(echo "$networkDesc") <(echo "$interfaceLinkState") <(echo "$interfaceSpeed") <(echo "$interfaceIPAddr") | column -N Manufacturer,Model,Description,'Interface Link State','Interface Speed','Interface IP Address' -s ';' -o ' | ' -t)
+#a table of the installed installed network interfaces (including virtual devices) with each table row having: 
+#Interface manufacturer
+#Interface model or description
+#Interface link state
+#Interface current speed
+#Interface IP addresses in CIDR format if configured
+#Interface bridge master if part of a bridge
+#DNS server(s) and search domain(s) if any are associated with the interface
+
 
 
 cat <<EOF
@@ -276,6 +306,19 @@ $ramtable
 
 $diskTable
 
+=========================================
+
+----------Video Report-------------------
+
+$videoCardManufacturer
+$videoCardModel
+$videoCardDescription
+
+=========================================
+
+----------Network Information------------
+
+$interfaceTable
 =========================================
 
 EOF
