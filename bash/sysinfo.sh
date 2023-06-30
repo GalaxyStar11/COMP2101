@@ -7,33 +7,37 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
+lshwOutput=$(lshw)
+lscpuOutput=$(lscpu)
+demidecodeOutput=$(dmidecode)
+lsblkOutput=$(lsblk)
 ################ System Description ######################
 
 #lshw command used with class "system" to filter system hardware
 #grep is used to get 'description' field, while awk is used to print the 2nd itme field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-compDescription=$(lshw -class system | grep 'adescription:' | awk '{print $2}')
+compDescription=$(echo "$lshwOutput" -class system | grep -m1 -i 'description:' | awk '{print $2}')
 if [ -z "$compDescription" ]; then 
 	compDescription='"Error!!!" Data is unavailable'
-else compDescription=$(lshw -class system | grep 'description:' | awk '{print $2}')
+else compDescription=$(echo "$lshwOutput" -class system | grep -m1 -i 'description:' | awk '{print $2}')
 fi
 
 #lshw command used with class "system" to filter system hardware
 #grep is used to get 'vendor' field, while awk is used to print all the fields after field 1
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-compManufacture=$(lshw -class system | grep 'avendor:' | head -1 | awk '{$1=""; print $0}')
+compManufacture=$(echo "$lshwOutput" -class system | grep 'vendor:' | head -1 | awk '{$1=""; print $0}')
 if [ -z "$compManufacture" ]; then
 	compManufacture='"Error!!!" Data is unavailable'
-else compManufacture=$(lshw -class system | grep 'vendor:' | head -1 | awk '{$1=""; print $0}')
+else compManufacture=$(echo "$lshwOutput" -class system | grep 'vendor:' | head -1 | awk '{$1=""; print $0}')
 fi
 
 #lshw command used with class "system" to filter system hardware
 #grep is used to get 'serial:' field, while awk is used to print all the fields after field 1
 #-z test command is used to check if the data is available or not' by testing the variable and checking if it's empty or not. If empty an error is displayed
-compSerial=$(lshw -class system | grep 'aserial:' | awk '{$1=""; print $0}')
+compSerial=$(echo "$lshwOutput" -class system | grep -m1 -i 'serial:' | awk '{$1=""; print $0}')
 if [ -z "$compSerial" ]; then
 	compSerial='"Error!!!" Data is unavailable'
-else compSerial=$(lshw -class system | grep 'serial:' | awk '{$1=""; print $0}')
+else compSerial=$(echo "$lshwOutput" -class system | grep -m1 -i 'serial:' | awk '{$1=""; print $0}')
 fi
 
 ################# CPU Information ######################
@@ -41,73 +45,73 @@ fi
 #lscpu command is used which gives CPU information
 #grep is used to get 'Model name:' field, while 
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpumodel=$(lscpu | grep 'Model name:' | sed 's/,*Model name: *//')
+cpumodel=$(echo "$lscpuOutput" | grep 'Model name:' | sed 's/,*Model name: *//')
 if [ -z "$cpumodel" ]; then
 	cpumodel='"Error!!! Data is unavailable'
-else cpumodel=$(lscpu | grep 'Model name:' | sed 's/,*Model name: *//')
+else cpumodel=$(echo "$lscpuOutput" | grep 'Model name:' | sed 's/,*Model name: *//')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'Architecture:' field, while awk is used to print the 2nd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuArch=$(lscpu | grep 'Architecture:' | awk '{print $2}')
+cpuArch=$(echo "$lscpuOutput" | grep 'Architecture:' | awk '{print $2}')
 if [ -z "$cpuArch" ]; then
 	cpuArch='"Error!!! Data is unavailable'
-else cpuArch=$(lscpu | grep 'Architecture:' | awk '{print $2}')
+else cpuArch=$(echo "$lscpuOutput" | grep 'Architecture:' | awk '{print $2}')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'CPU(s):' field, while awk is used to print the 2nd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuCore=$(lscpu | grep 'CPU(s):' | head -1 | awk '{print $2}')
+cpuCore=$(echo "$lscpuOutput" | grep 'CPU(s):' | head -1 | awk '{print $2}')
 if [ -z "$cpuCore" ]; then
 	cpuCore='"Error!!! Data is unavailable'
-else cpuCore=$(lscpu | grep 'CPU(s):' | head -1 | awk '{print $2}')
+else cpuCore=$(echo "$lscpuOutput" | grep 'CPU(s):' | head -1 | awk '{print $2}')
 fi
 
 #lshw command used with class "cpu" to filter cpu hardware
 #grep is used to get 'capacity::' field, while awk is used to print the 2nd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuMaxSpeed=$(lshw -class cpu | grep 'capacity:' | head -1 | awk '{print $2}')
+cpuMaxSpeed=$(echo "$lshwOutput" -class cpu | grep 'capacity:' | head -1 | awk '{print $2}')
 if [ -z "$cpuMaxSpeed" ]; then
 	cpuMaxSpeed='"Error!!! Data is unavailable'
-else cpuMaxSpeed=$(lshw -class cpu | grep 'capacity:' | head -1 | awk '{print $2}')
+else cpuMaxSpeed=$(echo "$lshwOutput" -class cpu | grep 'capacity:' | head -1 | awk '{print $2}')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'L1d' field, while awk is used to print the 3rd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuCacheL1D=$(lscpu | grep 'L1d' | awk '{print $3}')
+cpuCacheL1D=$(echo "$lscpuOutput" | grep 'L1d' | awk '{print $3}')
 if [ -z "$cpuCacheL1D" ]; then
 	cpuCacheL1D='"Error!!! Data is unavailable'
-else cpuCacheL1D=$(lscpu | grep 'L1d' | awk '{print $3}')
+else cpuCacheL1D=$(echo "$lscpuOutput" | grep 'L1d' | awk '{print $3}')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'L1i' field, while awk is used to print the 3rd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuCacheL1I=$(lscpu | grep 'L1i' | awk '{print $3}')
+cpuCacheL1I=$(echo "$lscpuOutput" | grep 'L1i' | awk '{print $3}')
 if [ -z "$cpuCacheL1I" ]; then
 	cpuCacheL1I='"Error!!! Data is unavailable'
-else cpuCacheL1I=$(lscpu | grep 'L1i' | awk '{print $3}')
+else cpuCacheL1I=$(echo "$lscpuOutput" | grep 'L1i' | awk '{print $3}')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'L2' field, while awk is used to print the 3rd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuCacheL2=$(lscpu | grep 'L2' | awk '{print $3}')
+cpuCacheL2=$(echo "$lscpuOutput" | grep 'L2' | awk '{print $3}')
 if [ -z "$cpuCacheL2" ]; then
 	cpuCacheL2='"Error!!! Data is unavailable'
-else cpuCacheL2=$(lscpu | grep 'L2' | awk '{print $3}')
+else cpuCacheL2=$(echo "$lscpuOutput" | grep 'L2' | awk '{print $3}')
 fi
 
 #lscpu command is used which gives CPU information
 #grep is used to get 'L3' field, while awk is used to print the 3rd field
 #-z test command is used to check if the data is available or not by testing the variable and checking if it's empty or not. If empty an error is displayed
-cpuCacheL3=$(lscpu | grep 'L3' | awk '{print $3}')
+cpuCacheL3=$(echo "$lscpuOutput" | grep 'L3' | awk '{print $3}')
 if [ -z "$cpuCacheL3" ]; then
 	cpuCacheL3='"Error!!! Data is unavailable'
-else cpuCacheL3=$(lscpu | grep 'L3' | awk '{print $3}')
+else cpuCacheL3=$(echo "$lscpuOutput" | grep 'L3' | awk '{print $3}')
 fi
 
 ##################### OS Information #####################
@@ -171,6 +175,74 @@ Linux Distro: $os
 Distro version: $distroVer"
 fi
 
+########################  RAM INFORMATION #######################
+ramManufacturer=$(echo "$demidecodeOutput" | grep -m1 -i "manufacturer" | awk '{$1=""; print $0}')
+ramProductName=$(echo "$demidecodeOutput" | grep -m1 -i "Product name" | awk '{$1=""; $2=""; print $0}')
+ramSerialNum=$(echo "$demidecodeOutput" | grep -m1 -i "serial number" | awk '{$1=""; $2=""; print $0}')
+ramSize=$(echo "$lshwOutput" | grep -A10 "\-memory" | grep 'size:' | awk 'FNR == 2 {$1=""; print $0}')
+ramSpeed=$(echo "$demidecodeOutput" --type 17 | grep -m1 Speed | awk '{ $1=""; print $0 }')
+ramLocation=$(echo "$lshwOutput" | grep -m1 'slot: RAM' | awk '{$1=""; $2=""; print $0}')
+totalSize=$(echo "$lshwOutput" | grep -A5 "\-memory" | grep -m1 'size:' | awk '{$1=""; print $0}')
+ramtable=$(paste -d ';' <(echo "$ramManufacturer") <(echo "$ramProductName") <(
+echo "$ramSerialNum") <(echo "$ramSize") <(echo "$ramSpeed") <(echo "$ramLocation") <(
+echo "$totalSize") | column -N Manufacturer,Model,'Serial Num',Size,Speed,Location,'Total Size' -s ';' -o ' | ' -t)
+
+#a table of the installed memory components (DIMMs, SODIMMs, etc.) with each table row having:
+#component manufacturer
+#component model/product name
+#component size in human readable format
+#component speed in human readable format
+#component physical location in human readable format
+#total size of installed ram in human readable format
+
+
+########################  STORAGE INFORMATION  ##################
+driveManufacturer0=$(echo "$lshwOutput" | grep -A10 '\*\-disk' | grep 'vendor:' | awk '{print $2}')
+
+driveVendor1=$(echo "$lshwOutput" | grep -m1 -A8 "\-volume:0" | grep "vendor:" | awk '{$1=""; print $0}')
+driveVendor2=$(echo "$lshwOutput" | grep -m1 -A8 "\-volume:1" | grep "vendor:" | awk '{$1=""; print $0}')
+driveVendor3=$(echo "$lshwOutput" | grep -m1 -A8 "\-volume:2" | grep "vendor:" | awk '{$1=""; print $0}')
+
+driveModel=$(echo "$lshwOutput" | grep -m1 -A10 "\-disk" | grep "product:" | awk '{$1=""; print $0}')
+
+driveSize0=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==1 {print $4"B"}')
+driveSize1=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==2 {print $4"B"}')
+driveSize2=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==3 {print $4"B"}')
+driveSize3=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==4 {print $4"B"}')
+
+drivePartition0=$(echo "$lsblkOutput" | grep -w "sda" | awk '{print $1}')
+drivePartition1=$(echo "$lsblkOutput" | grep -w "sda1" | awk '{print $1}' | tail -c 5)
+drivePartition2=$(echo "$lsblkOutput" | grep -w "sda2" | awk '{print $1}' | tail -c 5)
+drivePartition3=$(echo "$lsblkOutput" | grep -w "sda3" | awk '{print $1}' | tail -c 5)
+
+driveMountPoint0=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==1 {print $7}')
+driveMountPoint1=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==2 {print $7}')
+driveMountPoint2=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==3 {print $7}')
+driveMountPoint3=$(echo "$lsblkOutput" | grep "sda" | awk 'FNR==4 {print $7}')
+
+driveFilesystemSizeSDA2=$(df -h | grep "sda2" | awk '{print $2"B"}')
+driveFilesystemSizeSDA3=$(df -h | grep "sda3" | awk '{print $2"B"}')
+
+driveFilesystemFreeSDA2=$(df -h | grep "sda2" | awk '{print $4"B"}')
+driveFilesystemFreeSDA3=$(df -h | grep "sda3" | awk '{print $4"B"}')
+
+diskTable=$(paste -d ';' <(echo "$drivePartition0" ; echo "$drivePartition1" ; echo "$drivePartition2" ; echo "$drivePartition3" ) <( 
+echo "$driveManufacturer0" ; echo "$driveVendor1" ; echo "$driveVendor2" ; echo "$driveVendor3" ) <( 
+echo "$driveModel" ; echo "N/A" ; echo "N/A" ; echo "N/A") <( 
+echo "$driveSize0" ; echo "$driveSize1" ; echo "$driveSize2" ; echo "$driveSize3" ) <( 
+echo "N/A" ; echo "N/A" ; echo "$driveFilesystemSizeSDA2" ; echo "$driveFilesystemSizeSDA3" ) <( 
+echo "N/A" ; echo "N/A" ; echo "$driveFilesystemFreeSDA2" ; echo "$driveFilesystemFreeSDA3" ) <( 
+echo "$driveMountPoint0" ; echo "$driveMountPoint1" ; echo "$driveMountPoint2" ; echo "$driveMountPoint3" ) | column -N 'Logical Name (/dev/sda)',Vendor,Model,Size,'Filesystem Size','Filesystem Free Space','Mount Point' -s ';' -o ' | ' -t)
+#a table of the installed disk drives with each table row having:
+#Drive manufacturer
+#Drive model
+#Drive size in a human friendly format
+#Partition number
+#Mount point if mounted
+#Filesystem size in a human friendly format if filesystem is mounted
+#Filesystem free space in a human friendly format if filesystem is mounted
+
+
 cat <<EOF
 
 Report content:
@@ -193,5 +265,17 @@ $cpuinfo
 $osinfo
 
 ========================================
+
+-----------RAM Information--------------
+
+$ramtable
+
+========================================
+
+--------Disk Storage Information--------
+
+$diskTable
+
+=========================================
 
 EOF
