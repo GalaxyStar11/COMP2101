@@ -1,110 +1,81 @@
 #!/bin/bash
 
-# Testing if the script is run with root privilage and if not, exit
-if [ "$(id -u)" != "0" ]; then
-	echo "You need to be root for this script";
-	exit 1
+# Testing if the script is run with root privilage.
+# If not, the script is exited
+if ! [ "$(whoami)" = "root" ]; then
+	echo "You must have root privilage to run this script;
+	Try 'sudo' sysinfo.sh";
+	   exit 1
 fi
 
-# Sourcing the function library to load functions and variables
+# Sourcing the function library to load functions and variables for use in the script
 source reportfunctions.sh
 
-# Variables made to store output from commands
-lshwOutput=$(lshw)
-lscpuOutput=$(lscpu)
-demidecodeOutput=$(dmidecode)
-lsblkOutput=$(lsblk)
-
-
-##########################################################################
-
-# variables created to determine the script behaviour
-verbose=false
-systemReport=false
-diskReport=false
-networkReport=false
+# Variable created for default script behaviour, which runs all the report functions
 fullReport=true
 
 
-# While loop created to filter and go through commands
+#----------------------------------------------------
+
+# While loop created to filter and go-trough all the command options
 while [ $# -gt 0 ]; do
-	# case command is used to create options for the script
+	
+	# case command is used to create custom command line options for the script
 	case ${1} in
-		# -h \ --help option displays the help function
-		# displayhelp function is called
-		-h | --help)
-		displayHelp
-		exit 0
-		;;
-		# -v \ --verbose option to run script verbosely.
-		# verbose variable value is changed to true
-		-v | --verbose)
-		verbose=true
-		;;
-		# -s \ --system option to display only system report
-		# systemReport variable value is changed to true
-		-s | --system)
-		systemReport=true
-		;;
-		# -d \ --disk option to display only disk report
-		# diskReport variable value is changed to true
-		-d | --disk)
-		diskReport=true
-		;;
-		# -n \ --network option to display only network report
-		# networkReport variable value is changed to true
-		-n | --network)
-		networkReport=true
-		;;
-		# any other option except the ones mentioned above give a error
-		*)
-		echo "Invalid option
-Usage: sysinfo.sh [Options]
-try 'sysinfo.sh --help' for information"
-		errorMessage "$@"
-		exit 1
-		;;
+	# --help | -h command line option displays the help function
+	--help | -h)
+	helpfunction
+	exit 0
+	# default script behaviour variable is changed to false, hence not displaying the reports
+	fullReport=false
+	;;
+	# --verbose | -v option runs the script verbosely and prints the error message on the command line
+	--verbose | -v)
+	fullReport=false
+	$timeStamp
+	timeStamp=$(date +"%Y-%a-%d %T")
+	message="$1"
+	>&2 echo "[$timeStamp]" "$message"
+	exit 0
+	;;
+	# --system | -s option runs only the system reports (computerreport, cpureport, osreport, ramreport, and videoreport)
+	--system | -s)
+	fullReport=false
+	# systemOption function is called
+	systemOption
+	;;
+	# --disk | -d option runs only the diskreport
+	--disk | -d)
+	fullReport=false
+	# diskOption function is called
+	diskOption
+	;;
+	# --network | -n option runs only the networkreport
+	--network | -n)
+	fullReport=false
+	# networkoption function is called
+	networkOption
+	;;
+	# Any other character other than the above mentioned options, displays an error and exits the script.
+	*)
+	fullReport=false
+	echo "Invalid Option
+	usage: sysinfo.sh [options]
+	try 'sysinfo.sh --help' for more information"
+	errormessage "$@"
+	exit 1
+	;;
 	esac
 	shift
 done
 
-# If statements are used to check the options requested by user on the command line, which is done by comparing the values of variables created for script behaviour
-
-# If verbose value is true, then script is run verbosely and errors are displayed to user
-if [[ "$verbose" == true ]]; then
-	fullReport=false
-	errorMessage
-fi
-
-# if systemreport variable is true, then only computer info, cpu info, os info, ram info, and video card info are displayed
-if [[ "$systemReport" == true ]]; then
-	fullReport=false
+# If no command line option is entered, the default script, which inlcudes all the reports runs
+if [[ "$fullReport" == true ]]; then
 	computerreport
 	osreport
 	cpureport
 	ramreport
 	videoreport
-fi
-
-# if diskreport variable is true, then only disk information is displayed
-if [[ "$diskReport" == true ]]; then
-	fullReport=false
 	diskreport
-fi
-
-# if networkreport variable is true, then only network interface information is displayed
-if [[ "$networkReport" == true ]]; then
-	fullReport=false
 	networkreport
-fi
-
-# if no options are selected or inputed by user, then full report is displayed
-if [[ "$fullReport" == true ]]; then
-    computerreport
-    osreport
-    cpureport
-    ramreport
-    videoreport
-    diskreport
-    networkreport
 fi
