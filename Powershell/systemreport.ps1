@@ -1,11 +1,15 @@
-﻿#System Information Script
+﻿# param statement is used to add parametes to the script
+# switch type is specified to indicate they do not require an object on the cmd line
+param ([switch]$System, [switch]$Disks, [switch]$Network)
 
-#------------------------------------------------
-#System Hardware Report:
+# ------------------------------------------------
+# System Hardware Report function:
 function systemreport {
+    # variable to store value from the wmi object win32_computersystem class
     $hardwareInfo = Get-WmiObject win32_computersystem
     $myHardwareObjects = $hardwareInfo |
                             foreach { $hardware=$_;
+                                # new object is created for the data
                                         New-Object PSObject -Property @{Name=$hardware.name;
                                                                         Manufacturer=$hardware.manufacturer;
                                                                         Model=$hardware.model;
@@ -15,14 +19,15 @@ function systemreport {
                                                                         }
                                         }
     Write-Output "------------------------------ SYSTEM REPORT -----------------------------------"
+    # format statement is used to format it in a organized list
     $myHardwareObjects | Format-List Name, Manufacturer, Model, Description, Status, "System Type"
 }
 
-systemreport
 
-#-------------------------------------------------
-#OS Report:
+# -------------------------------------------------
+# OS Report:
 function osreport {
+    # variable to store value from the wmi object win32_operatingsystem class
     $osInfo = Get-WmiObject win32_operatingsystem
     $myOSInfo = $osInfo |
                     foreach { $os=$_;
@@ -35,14 +40,15 @@ function osreport {
                                                                  }
                                }
     Write-Output "------------------------------ OS REPORT -----------------------------------"
+    # format statement is used to format it in a organized list
     $myOSInfo | Format-List Name, Manufacturer, Version, SerialNumber, OSType, OSSKU, Buildtype, BuildNUmber
 }
 
-osreport
 
-#--------------------------------------------------
-#Processor Report:
+# --------------------------------------------------
+# Processor Report:
 function processorreport {
+    # variable to store value from the wmi object win32_processor class
     $processorInfo= Get-WmiObject win32_processor
     $myProcessorInfo = $processorInfo |
                             foreach { $processor=$_;
@@ -57,15 +63,17 @@ function processorreport {
                                                                         }
                                     }
     Write-Output "------------------------------ PROCESSOR REPORT -----------------------------------"
+    # format statement is used to format it in a organized list
     $myProcessorInfo | Format-List Name, Description, Speed, "Number of Cores", Socket, L1cache, L2cache, L3cache
 }
 
-processorreport
 
-#---------------------------------------------------
-#RAM report:
+# ---------------------------------------------------
+# RAM report:
 function ramreport {
+    # default variable for total capacity
     $totalCapacity = 0
+    # variable to store value from the wmi object win32_physicalmemory class
     $ramInfo = Get-WmiObject win32_physicalmemory
     $myRamInfo = $ramInfo |
                     foreach { $ram=$_;
@@ -80,20 +88,25 @@ function ramreport {
                             $totalCapacity+=$ram.capacity/1mb
                             }
     Write-Output "------------------------------ RAM REPORT -----------------------------------"
+    # format statement is used to format it in a organized table
     $myRamInfo | Format-Table -AutoSize Name, Vendor, Description, "Size(MB)", "Speed(MHz)", Bank, Slot
+    # Total RAM capacity is displayed at the bottom of the table
     "Total RAM: ${totalCapacity}MB"
     }
 
-ramreport
 
-#---------------------------------------------------
-#Disk Report:
+# ---------------------------------------------------
+# Disk Report function:
 function diskreport {
 Write-Output "------------------------------ DISK REPORT -----------------------------------"
+    # Nested foreach statements are used to gather data from multiple wmi objects
+    # variable to store value from the wmi object win32_diskdrive class
     $diskInfo= Get-CimInstance win32_diskdrive
     foreach ($disk in $diskInfo) {
+        # variable to store value from the wmi object win32_diskpartition class
         $partitions = $disk | Get-CimAssociatedInstance -ResultClassName win32_diskpartition
         foreach ($partition in $partitions) {
+            # variable to store value from the wmi object win32_logicaldisk class
             $logicaldisks = $partition | Get-CimAssociatedInstance -ResultClassName win32_logicaldisk
             foreach ($logicaldisk in $logicaldisks) {
                 New-Object -TypeName PSObject -Property @{Name=$disk.name;
@@ -105,17 +118,18 @@ Write-Output "------------------------------ DISK REPORT -----------------------
                                                           "Free Space(GB)"=[math]::Round($logicaldisk.freespace / 1gb);
                                                           "Percentage Free"=[math]::Round(($logicaldisk.freespace / $logicaldisk.size ) * 100)
                                                           } |
+                # format statement is used to format it in a organized table
                 Format-Table -AutoSize
             }
         }
     }
 }
 
-diskreport
 
-#------------------------------------------------
-#Ip configuration Report:
+# ------------------------------------------------
+# Ip configuration Report:
 function networkreport {
+    # variable to store value from the wmi object win32_networkadaptrconfiguration class
     $adapters = Get-CimInstance win32_networkadapterconfiguration
     $filteredAdapters = $adapters | Where-Object { $_.IPEnabled -eq $TRUE }
     $myNetworkObjects = $filteredAdapters |
@@ -130,14 +144,15 @@ function networkreport {
                                                                         }
                                         }
     Write-Output "------------------------------ NETWORK REPORT -----------------------------------"
+    # format statement is used to format it in a organized table
     $myNetworkObjects | format-table -autosize Name, "Adapter Description", index, IPAddress, "Subnet Mask", "DNS Domain Name", "DNS Server"
 }
 
-networkreport
 
-#-------------------------------------------------
-#Video Card Report:
+# -------------------------------------------------
+# Video Card Report:
 function videoreport {
+    # variable to store value from the wmi object win32_videocontroller class
     $videoCards = Get-WmiObject win32_videocontroller
     $myVideoCards = $videoCards|
                            foreach { $videoCard=$_;
@@ -151,7 +166,36 @@ function videoreport {
                                                                                   }
                                         }
      Write-Output "------------------------------ VIDEO REPORT -----------------------------------"
+     # format statement is used to format it in a organized list
      $myVideoCards | Format-List Name,Description, Manufacturer,"Refresh Rate", Resolution
 }
 
-videoreport
+# If -System parameter is passed on the cmd line, only certain functions are displayed
+if ($System) {
+    systemreport
+    osreport
+    processorreport
+    ramreport
+    videoreport
+    
+}
+# If -Disks parameter is passed on the cmd line, only diskreport function is displayed
+if ($Disks) {
+    diskreport
+
+}
+# If -Network parameter is passed on the cmd line, only networkreport function is displayed
+if ($Network) {
+    networkreport
+
+}
+# If no parameter is passed, all the reports are displayed
+if (-not ($System -or $Disks -or $Network)) {
+    systemreport
+    osreport
+    processorreport
+    ramreport
+    videoreport
+    networkreport
+    diskreport
+}
