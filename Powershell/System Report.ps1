@@ -14,6 +14,7 @@ function systemreport {
                                                                         "System Type"=$hardware.systemtype
                                                                         }
                                         }
+    Write-Output "------------------------------ SYSTEM REPORT -----------------------------------"
     $myHardwareObjects | Format-List Name, Manufacturer, Model, Description, Status, "System Type"
 }
 
@@ -33,6 +34,7 @@ function osreport {
                                                                  Buildnumber=$os.buildnumber
                                                                  }
                                }
+    Write-Output "------------------------------ OS REPORT -----------------------------------"
     $myOSInfo | Format-List Name, Manufacturer, Version, SerialNumber, OSType, OSSKU, Buildtype, BuildNUmber
 }
 
@@ -54,6 +56,7 @@ function processorreport {
                                                                         L3cache=$processor.l3cachesize
                                                                         }
                                     }
+    Write-Output "------------------------------ PROCESSOR REPORT -----------------------------------"
     $myProcessorInfo | Format-List Name, Description, Speed, "Number of Cores", Socket, L1cache, L2cache, L3cache
 }
 
@@ -76,6 +79,7 @@ function ramreport {
                                                                 }
                             $totalCapacity+=$ram.capacity/1mb
                             }
+    Write-Output "------------------------------ RAM REPORT -----------------------------------"
     $myRamInfo | Format-Table -AutoSize Name, Vendor, Description, "Size(MB)", "Speed(MHz)", Bank, Slot
     "Total RAM: ${totalCapacity}MB"
     }
@@ -85,6 +89,7 @@ ramreport
 #---------------------------------------------------
 #Disk Report:
 function diskreport {
+Write-Output "------------------------------ DISK REPORT -----------------------------------"
     $diskInfo= Get-CimInstance win32_diskdrive
     foreach ($disk in $diskInfo) {
         $partitions = $disk | Get-CimAssociatedInstance -ResultClassName win32_diskpartition
@@ -124,6 +129,7 @@ function networkreport {
                                                                         "DNS Server"=$adapter.dnsserversearchorder
                                                                         }
                                         }
+    Write-Output "------------------------------ NETWORK REPORT -----------------------------------"
     $myNetworkObjects | format-table -autosize Name, "Adapter Description", index, IPAddress, "Subnet Mask", "DNS Domain Name", "DNS Server"
 }
 
@@ -144,6 +150,7 @@ function videoreport {
                                                                                   Resolution=($videoCard.currenthorizontalresolution,"x", $videoCard.currentverticalresolution)
                                                                                   }
                                         }
+     Write-Output "------------------------------ VIDEO REPORT -----------------------------------"
      $myVideoCards | Format-List Name,Description, Manufacturer,"Refresh Rate", Resolution
 }
 
